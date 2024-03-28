@@ -11,29 +11,56 @@ function setup() {
    rectMode(CENTER)
    textAlign(CENTER)
    translate(floor(width / 2), floor(height / 2))
-   frameRate(20)
-   nodes = get_random(7)
+   frameRate(10)
+   nodes = get_random(5)
+   nodes = centre(nodes)
    nodes = centre(nodes)
 }
 function draw() {
    background(27)
+
    text(floor(frameRate()), 20, 30)
    translate(floor(width / 2), floor(height / 2))
-   nodes = centre(successor(nodes))
-   nodes.render(0, 0)
 
-   // noLoop()
+   // fill(20)
+   // rect(0, 0, resolution * 2 ** nodes.k, resolution * 2 ** nodes.k)
+   // fill(24)
+   // rect(0, 0, resolution * 2 ** (nodes.k - 1), resolution * 2 ** (nodes.k - 1))
+   nodes.render(0, 0)
+   if (nodes.a.n || nodes.b.n || nodes.c.n || nodes.d.n) {
+      //nodes = centre(nodes)
+   }
+   // fill(24)
+   // rect(0, 0, resolution * 2 ** 5, resolution * 2 ** 5)
+   const newNodes = successor(nodes)
+   if (checkEdge(newNodes)) {
+      nodes = centre(centre(newNodes))
+      console.log(nodes.k)
+   } else {
+      nodes = centre(newNodes)
+   }
+   noLoop()
 }
-// function drawPixel(x, y, w, h) {
-//    for (let i = 0; i < w * 2; i++)
-//       for (let j = 0; j < h * 2; j++) {
-//          const index = (x + i - w + (y + j - h) * width * 2) * 8
-//          pixels[index] = dotColor
-//          pixels[index + 1] = dotColor
-//          pixels[index + 2] = dotColor
-//          pixels[index + 3] = 255
-//       }
-// }
+
+function checkEdge(node) {
+   return (
+      node.a.a.n ||
+      node.a.b.n ||
+      node.b.a.n ||
+      node.b.b.n ||
+      node.a.c.n ||
+      node.b.d.n ||
+      node.c.a.n ||
+      node.c.c.n ||
+      node.c.d.n ||
+      node.d.b.n ||
+      node.d.c.n ||
+      node.d.d.n
+   )
+}
+function keyPressed() {
+   if (key === 'l') loop()
+}
 
 function joins(a, b, c, d) {
    const n = a.n + b.n + c.n + d.n

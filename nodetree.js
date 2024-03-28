@@ -14,7 +14,6 @@ class Nodetree {
    toString() {
       return `Node k=${this.k}, ${1 << this.k} x ${1 << this.k}, pop ${this.n}`
    }
-   nextGeneration() {}
    render(x, y, name) {
       if (this.n > 0) {
          if (this.k === 0) {
