@@ -33,13 +33,13 @@ function draw() {
    // fill(24)
    // rect(0, 0, resolution * 2 ** 5, resolution * 2 ** 5)
    const newNodes = successor(nodes)
-   if (checkEdge(newNodes)) {
+   if (checkEdge(newNodes) && nodes.k < 9) {
       nodes = centre(centre(newNodes))
       console.log(nodes.k)
    } else {
       nodes = centre(newNodes)
    }
-   noLoop()
+   // noLoop()
 }
 
 function checkEdge(node) {
