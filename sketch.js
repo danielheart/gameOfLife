@@ -1,7 +1,7 @@
-const resolution = 2
-const on = new Nodetree(0, null, null, null, null, 1, 1)
-const off = new Nodetree(0, null, null, null, null, 0, 0)
-const dotColor = 100
+const resolution = 20
+const on = new Nodetree(0, null, null, null, null, 1, 1n)
+const off = new Nodetree(0, null, null, null, null, 0, 0n)
+const dotColor = 150
 let nodes
 function setup() {
    createCanvas(windowWidth, windowHeight)
@@ -11,10 +11,15 @@ function setup() {
    rectMode(CENTER)
    textAlign(CENTER)
    translate(floor(width / 2), floor(height / 2))
-   frameRate(20)
-   nodes = get_random(3)
-   //nodes = centre(nodes)
-   //nodes = centre(nodes)
+   frameRate(1)
+   nodes = centre(
+      joins(
+         joins(off, off, off, on),
+         joins(off, off, off, on),
+         joins(off, off, off, off),
+         joins(on, on, on, off),
+      ),
+   )
 }
 function draw() {
    background(27)
@@ -22,24 +27,26 @@ function draw() {
    text(floor(frameRate()), 20, 30)
    translate(floor(width / 2), floor(height / 2))
 
-   // fill(20)
-   // rect(0, 0, resolution * 2 ** nodes.k, resolution * 2 ** nodes.k)
-   // fill(27)
-   // rect(0, 0, resolution * 2 ** (nodes.k - 1), resolution * 2 ** (nodes.k - 1))
+   fill(0, 20)
+   rect(0, 0, resolution * 2 ** nodes.k, resolution * 2 ** nodes.k)
+   fill(0, 20)
+   rect(0, 0, resolution * 2 ** (nodes.k - 1), resolution * 2 ** (nodes.k - 1))
+   fill(0, 20)
+   rect(0, 0, resolution * 2 ** (nodes.k - 2), resolution * 2 ** (nodes.k - 2))
    nodes.render(0, 0)
-   if (nodes.a.n || nodes.b.n || nodes.c.n || nodes.d.n) {
-      //nodes = centre(nodes)
-   }
-   // fill(24)
-   // rect(0, 0, resolution * 2 ** 5, resolution * 2 ** 5)
+
    const newNodes = successor(nodes, 0)
-   if (checkEdge(newNodes) && nodes.k < 10) {
+   if (checkEdge(newNodes)) {
       nodes = centre(centre(newNodes))
       console.log(nodes.k)
    } else {
       nodes = centre(newNodes)
    }
-   //noLoop()
+   noLoop()
+}
+function keyPressed() {
+   if (key === 'n') noLoop()
+   else if (key === 'l') loop()
 }
 
 function checkEdge(node) {
@@ -59,26 +66,46 @@ function checkEdge(node) {
    )
 }
 
-const joinsMemo = {}
-function joins(a, b, c, d) {
+function memoize(func, cache = {}) {
+   return function (...args) {
+      const key = args.map((item) => item.hash)
+      // key = JSON.stringify(args)
+
+      if (cache[key]) {
+         return cache[key]
+      }
+
+      const result = func.apply(this, args)
+      cache[key] = result
+      //console.log(cache)
+      return result
+   }
+}
+function memoizes(func) {
+   return function (...args) {
+      return func.apply(this, args)
+   }
+}
+const joins = memoize(function (a, b, c, d) {
    const n = a.n + b.n + c.n + d.n
    const nhash =
-      (a.k +
-         2 +
-         5131830419411 * a.hash +
-         3758991985019 * b.hash +
-         8973110871315 * c.hash +
-         4318490180473 * d.hash) &
-      ((1 << 63) - 1)
-   const key = nhash.toString()
-   if (joinsMemo[key]) {
-      //console.log(nhash)
-      return joinsMemo[key]
-   }
-
-   joinsMemo[key] = new Nodetree(a.k + 1, a, b, c, d, n, nhash)
-   return joinsMemo[key]
-}
+      (BigInt(a.k) +
+         2n +
+         5131830419413n * a.hash +
+         3758991985019n * b.hash +
+         8973110871315n * c.hash +
+         4318490180473n * d.hash) &
+      0xffffffffffffffffn
+   // const nhash =
+   //    (a.k +
+   //       2 +
+   //       5131830419413 * a.hash +
+   //       3758991985019 * b.hash +
+   //       8973110871315 * c.hash +
+   //       4318490180473 * d.hash) &
+   //    (1 << (63 - 1))
+   return new Nodetree(a.k + 1, a, b, c, d, n, nhash)
+})
 
 function get_zero(k) {
    return k === 0
@@ -167,13 +194,10 @@ function life_4x4(m) {
    )
    return joins(ad, bc, cb, da)
 }
-//const successorMemo = {}
-function successor(m, j = null, successorMemo = {}) {
-   if (m.hash in successorMemo) {
-      console.log(m.hash)
-      return successorMemo[m.hash]
-   }
+
+const successor = memoize(function (m, j = null) {
    // Return the 2**k-1 x 2**k-1 successor, 2**j generations in the future
+
    if (m.n === 0) {
       // empty
       return m.a
@@ -208,8 +232,6 @@ function successor(m, j = null, successorMemo = {}) {
             successor(joins(c5, c6, c8, c9), j),
          )
       }
-      successorMemo[m.hash] = s
-
       return s
    }
-}
+})
