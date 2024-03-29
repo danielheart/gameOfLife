@@ -1,4 +1,4 @@
-const resolution = 4
+const resolution = 2
 const on = new Nodetree(0, null, null, null, null, 1, 1)
 const off = new Nodetree(0, null, null, null, null, 0, 0)
 const dotColor = 100
@@ -6,25 +6,25 @@ let nodes
 function setup() {
    createCanvas(windowWidth, windowHeight)
    background(27)
-   fill(80)
+   fill(dotColor)
    noStroke()
    rectMode(CENTER)
    textAlign(CENTER)
    translate(floor(width / 2), floor(height / 2))
-   frameRate(10)
-   nodes = get_random(5)
-   nodes = centre(nodes)
-   nodes = centre(nodes)
+   frameRate(20)
+   nodes = get_random(3)
+   //nodes = centre(nodes)
+   //nodes = centre(nodes)
 }
 function draw() {
    background(27)
-
+   fill(100)
    text(floor(frameRate()), 20, 30)
    translate(floor(width / 2), floor(height / 2))
 
    // fill(20)
    // rect(0, 0, resolution * 2 ** nodes.k, resolution * 2 ** nodes.k)
-   // fill(24)
+   // fill(27)
    // rect(0, 0, resolution * 2 ** (nodes.k - 1), resolution * 2 ** (nodes.k - 1))
    nodes.render(0, 0)
    if (nodes.a.n || nodes.b.n || nodes.c.n || nodes.d.n) {
@@ -32,14 +32,14 @@ function draw() {
    }
    // fill(24)
    // rect(0, 0, resolution * 2 ** 5, resolution * 2 ** 5)
-   const newNodes = successor(nodes)
-   if (checkEdge(newNodes) && nodes.k < 9) {
+   const newNodes = successor(nodes, 0)
+   if (checkEdge(newNodes) && nodes.k < 10) {
       nodes = centre(centre(newNodes))
       console.log(nodes.k)
    } else {
       nodes = centre(newNodes)
    }
-   // noLoop()
+   //noLoop()
 }
 
 function checkEdge(node) {
@@ -58,10 +58,8 @@ function checkEdge(node) {
       node.d.d.n
    )
 }
-function keyPressed() {
-   if (key === 'l') loop()
-}
 
+const joinsMemo = {}
 function joins(a, b, c, d) {
    const n = a.n + b.n + c.n + d.n
    const nhash =
@@ -72,7 +70,14 @@ function joins(a, b, c, d) {
          8973110871315 * c.hash +
          4318490180473 * d.hash) &
       ((1 << 63) - 1)
-   return new Nodetree(a.k + 1, a, b, c, d, n, nhash)
+   const key = nhash.toString()
+   if (joinsMemo[key]) {
+      //console.log(nhash)
+      return joinsMemo[key]
+   }
+
+   joinsMemo[key] = new Nodetree(a.k + 1, a, b, c, d, n, nhash)
+   return joinsMemo[key]
 }
 
 function get_zero(k) {
@@ -162,7 +167,12 @@ function life_4x4(m) {
    )
    return joins(ad, bc, cb, da)
 }
-function successor(m, j = null) {
+//const successorMemo = {}
+function successor(m, j = null, successorMemo = {}) {
+   if (m.hash in successorMemo) {
+      console.log(m.hash)
+      return successorMemo[m.hash]
+   }
    // Return the 2**k-1 x 2**k-1 successor, 2**j generations in the future
    if (m.n === 0) {
       // empty
@@ -198,6 +208,8 @@ function successor(m, j = null) {
             successor(joins(c5, c6, c8, c9), j),
          )
       }
+      successorMemo[m.hash] = s
+
       return s
    }
 }

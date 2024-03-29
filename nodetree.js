@@ -8,7 +8,7 @@ class Nodetree {
       this.n = n
       this.hash = hash
    }
-   hashCode() {
+   getHash() {
       return this.hash
    }
    toString() {
@@ -17,7 +17,7 @@ class Nodetree {
    render(x, y, name) {
       if (this.n > 0) {
          if (this.k === 0) {
-            fill(50)
+            fill(dotColor)
             rect(x, y, resolution - 1, resolution - 1)
             // fill(10)
             // text(name, x, y + 5)
