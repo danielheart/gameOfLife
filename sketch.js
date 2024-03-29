@@ -11,7 +11,7 @@ function setup() {
    rectMode(CENTER)
    textAlign(CENTER)
    translate(floor(width / 2), floor(height / 2))
-   frameRate(1)
+   frameRate(60)
    nodes = centre(
       joins(
          joins(off, off, off, on),
@@ -42,7 +42,7 @@ function draw() {
    } else {
       nodes = centre(newNodes)
    }
-   noLoop()
+   //noLoop()
 }
 function keyPressed() {
    if (key === 'n') noLoop()
@@ -69,7 +69,6 @@ function checkEdge(node) {
 function memoize(func, cache = {}) {
    return function (...args) {
       const key = args.map((item) => item.hash)
-      // key = JSON.stringify(args)
 
       if (cache[key]) {
          return cache[key]
