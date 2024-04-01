@@ -1,7 +1,8 @@
 const resolution = 20
-const on = new Nodetree(0, null, null, null, null, 1, 1n)
-const off = new Nodetree(0, null, null, null, null, 0, 0n)
+const on = new Nodetree(0, null, null, null, null, 1, 1)
+const off = new Nodetree(0, null, null, null, null, 0, 0)
 const dotColor = 150
+const HASHMAP_LIMIT = 24
 let nodes
 function setup() {
    createCanvas(windowWidth, windowHeight)
@@ -11,7 +12,7 @@ function setup() {
    rectMode(CENTER)
    textAlign(CENTER)
    translate(floor(width / 2), floor(height / 2))
-   frameRate(60)
+   frameRate(10)
    nodes = centre(
       joins(
          joins(off, off, off, on),
@@ -87,22 +88,15 @@ function memoizes(func) {
 }
 const joins = memoize(function (a, b, c, d) {
    const n = a.n + b.n + c.n + d.n
+   const nhash2 = random()
    const nhash =
-      (BigInt(a.k) +
-         2n +
-         5131830419413n * a.hash +
-         3758991985019n * b.hash +
-         8973110871315n * c.hash +
-         4318490180473n * d.hash) &
-      0xffffffffffffffffn
-   // const nhash =
-   //    (a.k +
-   //       2 +
-   //       5131830419413 * a.hash +
-   //       3758991985019 * b.hash +
-   //       8973110871315 * c.hash +
-   //       4318490180473 * d.hash) &
-   //    (1 << (63 - 1))
+      a.k +
+      2 +
+      5131830419413 * a.hash +
+      3758991985019 * b.hash +
+      8973110871315 * c.hash +
+      4318490180473 * d.hash
+
    return new Nodetree(a.k + 1, a, b, c, d, n, nhash)
 })
 
