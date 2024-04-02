@@ -1,19 +1,14 @@
 class Nodetree {
-   constructor(k, a, b, c, d, n, hash) {
+   constructor(k, a, b, c, d, n, id) {
       this.k = k
       this.a = a
       this.b = b
       this.c = c
       this.d = d
       this.n = n
-      this.hash = hash
+      this.id = id
    }
-   getHash() {
-      return this.hash
-   }
-   toString() {
-      return `Node k=${this.k}, ${1 << this.k} x ${1 << this.k}, pop ${this.n}`
-   }
+
    render(x, y, name) {
       if (this.n > 0) {
          if (this.k === 0) {

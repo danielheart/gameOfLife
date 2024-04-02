@@ -1,10 +1,9 @@
-const resolution = 10
+const resolution = 20
 const on = new Nodetree(0, null, null, null, null, 1, 1)
 const off = new Nodetree(0, null, null, null, null, 0, 0)
 const dotColor = 150
 const HASHMAP_LIMIT = 24
 let nodes
-let lastId = 1
 function setup() {
    createCanvas(windowWidth, windowHeight)
    background(27)
@@ -14,13 +13,14 @@ function setup() {
    textAlign(CENTER)
    translate(floor(width / 2), floor(height / 2))
    frameRate(10)
-   nodes = joins(
-      joins(off, off, off, on),
-      joins(off, off, off, on),
-      joins(off, off, off, off),
-      joins(on, on, on, off),
+   nodes = centre(
+      joins(
+         joins(off, off, off, on),
+         joins(off, off, off, on),
+         joins(off, off, off, off),
+         joins(on, on, on, off),
+      ),
    )
-   // nodes = get_random(3)
 }
 function draw() {
    background(27)
@@ -28,17 +28,22 @@ function draw() {
    text(floor(frameRate()), 20, 30)
    translate(floor(width / 2), floor(height / 2))
 
-   if (checkEdge(nodes)) {
-      nodes = centre(nodes)
-   }
    fill(0, 20)
    rect(0, 0, resolution * 2 ** nodes.k, resolution * 2 ** nodes.k)
    fill(0, 20)
    rect(0, 0, resolution * 2 ** (nodes.k - 1), resolution * 2 ** (nodes.k - 1))
+   fill(0, 20)
+   rect(0, 0, resolution * 2 ** (nodes.k - 2), resolution * 2 ** (nodes.k - 2))
    nodes.render(0, 0)
-   nodes = successor(centre(nodes), 0)
 
-   // noLoop()
+   const newNodes = successor(nodes, 0)
+   if (checkEdge(newNodes)) {
+      nodes = centre(centre(newNodes))
+      console.log(nodes.k)
+   } else {
+      nodes = centre(newNodes)
+   }
+   //noLoop()
 }
 function keyPressed() {
    if (key === 'n') noLoop()
@@ -63,16 +68,14 @@ function checkEdge(node) {
 }
 
 function memoize(func, cache = {}) {
-   return function (a, b, c, d) {
-      console.log(a.k, a.id, b.id, c.id, d.id)
-      const key = (((((a.id * 23) ^ b.id) * 23) ^ c.id) * 23) ^ d.id
+   return function (...args) {
+      const key = args.map((item) => item.hash)
 
-      // const key = random()
       if (cache[key]) {
          return cache[key]
       }
 
-      const result = func(a, b, c, d)
+      const result = func.apply(this, args)
       cache[key] = result
       //console.log(cache)
       return result
@@ -85,8 +88,16 @@ function memoizes(func) {
 }
 const joins = memoize(function (a, b, c, d) {
    const n = a.n + b.n + c.n + d.n
-   const id = ++lastId
-   return new Nodetree(a.k + 1, a, b, c, d, n, id)
+   const nhash2 = random()
+   const nhash =
+      a.k +
+      2 +
+      5131830419413 * a.hash +
+      3758991985019 * b.hash +
+      8973110871315 * c.hash +
+      4318490180473 * d.hash
+
+   return new Nodetree(a.k + 1, a, b, c, d, n, nhash)
 })
 
 function get_zero(k) {
@@ -177,7 +188,7 @@ function life_4x4(m) {
    return joins(ad, bc, cb, da)
 }
 
-const successor = memoizes(function (m, j = null) {
+const successor = memoize(function (m, j = null) {
    // Return the 2**k-1 x 2**k-1 successor, 2**j generations in the future
 
    if (m.n === 0) {
