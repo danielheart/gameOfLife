@@ -35,10 +35,11 @@ function draw() {
    rect(0, 0, resolution * 2 ** nodes.k, resolution * 2 ** nodes.k)
    fill(0, 20)
    rect(0, 0, resolution * 2 ** (nodes.k - 1), resolution * 2 ** (nodes.k - 1))
+
    nodes.render(0, 0)
    nodes = successor(centre(nodes), 0)
 
-   // noLoop()
+   noLoop()
 }
 function keyPressed() {
    if (key === 'n') noLoop()
@@ -64,7 +65,7 @@ function checkEdge(node) {
 
 function memoize(func, cache = {}) {
    return function (a, b, c, d) {
-      console.log(a.k, a.id, b.id, c.id, d.id)
+      // console.log(a.k, a.id, b.id, c.id, d.id)
       const key = (((((a.id * 23) ^ b.id) * 23) ^ c.id) * 23) ^ d.id
 
       // const key = random()
@@ -78,6 +79,23 @@ function memoize(func, cache = {}) {
       return result
    }
 }
+function memoize2(func, cache = {}) {
+   return function (...m) {
+      // const key = m.id
+
+      // const key = JSON.stringify([m.a.id,m.b.id,m.c.id,m.d.id])
+      const key = JSON.stringify(m)
+      if (cache[key]) {
+         return cache[key]
+      }
+
+      const result = func.apply(this, m)
+      cache[key] = result
+      //console.log(cache)
+      return result
+   }
+}
+
 function memoizes(func) {
    return function (...args) {
       return func.apply(this, args)
@@ -177,7 +195,7 @@ function life_4x4(m) {
    return joins(ad, bc, cb, da)
 }
 
-const successor = memoizes(function (m, j = null) {
+const successor = memoize2(function (m, j = null) {
    // Return the 2**k-1 x 2**k-1 successor, 2**j generations in the future
 
    if (m.n === 0) {
