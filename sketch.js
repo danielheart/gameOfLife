@@ -81,11 +81,12 @@ function memoize(func, cache = {}) {
 }
 function memoize2(func, cache = {}) {
    return function (...m) {
-      // const key = m.id
+      const key = m[0].id
 
       // const key = JSON.stringify([m.a.id,m.b.id,m.c.id,m.d.id])
-      const key = JSON.stringify(m)
+      // const key = JSON.stringify(m)
       if (cache[key]) {
+         console.log(key,m)
          return cache[key]
       }
 
